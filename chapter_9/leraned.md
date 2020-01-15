@@ -94,7 +94,7 @@ Active Record の設計から得られる教訓
 
 ## note
 
-ActiveRecordが読み込まれるまでの順序
+### ActiveRecordが読み込まれるまでの順序
 1. require 'active_record'
 
 
@@ -116,3 +116,18 @@ autoload :Validations
 ```
 
 3. それぞれのモジュールからメソッドが追加される
+
+
+
+### valid?について
+> valid? メソッドはデータベースに手を 出さなければいけないのでActiveRecord::Validationsに残り
+
+とあったがこれは、下記のようなバリデーションがひつようになるから
+- uniqueness
+- belongs_to における存在確認
+
+
+なお、valid? は ActiveModel::Validationsにも存在する
+https://github.com/rails/rails/blob/master/activemodel/lib/active_model/validations.rb#L334
+
+ActiveRecord::Validations#valid? はsuperでActiveModel::Validations#valid? を用いている
