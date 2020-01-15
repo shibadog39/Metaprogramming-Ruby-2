@@ -57,7 +57,7 @@ end
 - 数十あるモジュールを extend および include しているだけ
 - run_load_hooks を呼び出している行は、オートロードされたモジュールが設定用のコードを呼び出せるようにするもの
 
--> 最も重要なクラスである ActiveRecord::Base はモジュールの集まり
+**最も重要なクラスである ActiveRecord::Base はモジュールの集まり**
 
 ActiveRecord::Base は、モジュールのソース コードを require してからモジュールを include する必要がない。
 モジュールを include するだけ でいい。オートローディングのおかげで、Base などのクラスは最小限のコードで、多くのモジュールをインクルードできるようになっている
@@ -65,8 +65,8 @@ ActiveRecord::Base は、モジュールのソース コードを require 
 例えば、save のような永続化のメソッドは、ActiveRecord::Persistence にある。
 
 ### 9.2.3 Validations モジュール
-valid? -> ActiveRecord::Validations
-validate -> ActiveRecord::Validations がincludeしているActiveModel::Validations
+- valid? -> ActiveRecord::Validations
+- validate -> ActiveRecord::Validations がincludeしているActiveModel::Validations
 
 #### 疑問1：クラスがモジュールをインクルードすると、通常はインスタンスメソッドが手に入るが、 validate は ActiveRecord::Base のクラスメソッドである
 モジュールをインクルードしたときに、インスタンスメソッドと一 緒にクラスメソッドも手に入っている。
