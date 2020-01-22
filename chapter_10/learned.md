@@ -247,21 +247,15 @@ end
 ```
 
 1. MyClassがFirstLevelModuleをincludeしようとする
+  - FirstLevelModuleがSecondLevelModuleをincludeしようとする
+  - FirstLevelModuleの@_dependenciesにSecondLevelModuleが入る
 
-2. FirstLevelModuleがSecondLevelModuleをincludeしようとする
+2. FirstLevelModuleの@_dependenciesをもとにMyClassに再帰的にincludeが実行される
+  このときSecondLevelModuleのappend_featuresによって以下の2つが行われる
+  - SecondLevelModuleがMyClassにincludeされる(superによって)
+  - MyClassがSecondLevelModuleの ClassMethods をエクステンドする
 
-3. FirstLevelModuleの@_dependenciesにSecondLevelModuleが入る
+3. FirstLevelModuleがMyClassにincludeされる(superによって)
 
-4. FirstLevelModuleの@_dependenciesをもとにMyClassに再帰的にincludeが実行される
+4. MyClassがFirstLevelModuleの ClassMethods をエクステンドする
 
-5. FirstLevelModuleがMyClassにincludeされる(superによって)
-
-6. MyClassがFirstLevelModuleの ClassMethods をエクステンドする
-
-
-疑問：second_level_class_methodってどうやってMyClassに生えてるの？
-このへんが理解できていないせいな気がする
-```
-ClassMethodsの参照は Kernel#const_get を使って取得する必要がある
-コードが物理的に配置されている Concern モジュールではなく、self のスコープで定数を読み込まなければいけないから
-```
