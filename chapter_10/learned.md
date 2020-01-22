@@ -111,3 +111,157 @@ module FirstLevelModule
 **ここまででみてきたような下記問題を解決するためにActiveSupport::Concern は生まれた**
 - いくつものモジュールに同じようなボイラープレートコードが必要になる
 - 複数のレベルでモジュールをインクルードするとうまく動作しなくなる
+
+
+## 10.2 ActiveSupport::Concern
+ActiveSupport::Concern は、include と extend のトリックをカプセル化して、includeの連鎖の問題を解決
+実際に使うイメージは下記
+
+```ruby
+module MyConcern
+  extend ActiveSupport::Concern
+
+  def an_instance_method; " インスタンスメソッド "; end
+
+  module ClassMethods
+    def a_class_method; " クラスメソッド "; end
+  end
+end
+
+class MyClass
+  include MyConcern
+end
+
+MyClass.new.an_instance_method # => " インスタンスメソッド "
+MyClass.a_class_method # => " クラスメソッド "
+```
+
+## 10.2.1 Concern のソースコードの概観
+`extended`と`append_features`という2つの重要なメソッドからなる
+
+### extended
+
+```ruby
+module ActiveSupport
+  module Concern
+    class MultipleIncludedBlocks < StandardError #:nodoc:
+      def initialize
+        super "Cannot define multiple 'included' blocks for a Concern" end
+      end
+
+      def self.extended(base)
+        base.instance_variable_set(:@_dependencies, [])
+      end
+
+      # ...
+```
+
+エクステンダーにクラスインスタンス変数(p.114)である @_ dependencies を定義するだけ
+
+
+### append_features
+Concern は、独自の append_features を定義しており、Ruby のコアのメソッドをオーバーライドしている
+
+#### Module#append_features
+http://ref.xaio.jp/ruby/classes/module/append_features
+
+Module#includeメソッドの本体
+includeメソッドの実装は、引数の各モジュールに対してappend_featuresメソッドとincludedメソッドを呼び出すというもの。
+インクルードの機能の本体はappend_featuresにある。
+
+→ append_features をオーバーライドすると、(superしない限り)モジュールが一切インクルードされなくなる
+
+
+#### Concern#append_features
+ここまでで明らかになっていること
+```
+Concern をエクステンドしたモジュールは
+- クラス 変数 @_dependencies を手に入れる
+- オーバーライドした append_features を手に入れる
+```
+
+**Concern#append_features の中身**
+簡単にいうと
+```
+concernのなかで、別の concernをインクルードしないのである。
+concern がお互いにインクルードしようとしていたら、 依存関係のグラフのなかにリンクするだけだ。
+concern ではないモジュールに別の concern がインクルードされたら、すべての依存関係をインクルーダーに一気に流し込む
+```
+
+```ruby
+module ActiveSupport
+  module Concern
+    def append_features(base)
+      # このスコープのなかでは、selfはconcern
+      # base はincludeをよんだモジュール
+
+      # 1. インクルーダーが concern かどうかを確認
+      # クラス変数 @_dependencies があれば、それが concern だとわかる
+      if base.instance_variable_defined?(:@_dependencies)
+        # インクルーダーの継承チェーンに自身を追加する代わりに、依存関係のリストに自身を追加している
+        base.instance_variable_get(:@_dependencies) << self
+        # インクルードが発生しなかったことを示すために、falseを戻している
+        return false
+      else
+        # すでにインクルーダーの継承チェーンに自身が追加されていないかどうかを確認(他のconcernがインクルードされるなどして)
+        return false if base < self
+        # インクルーダーに依存関係を再帰的にインクルードしていく
+        @_dependencies.each { |dep| base.send(:include, dep) }
+        # Module.append_features を呼び出して、継承チェーンに自分自身を追加
+        super
+        # インクルーダーに ClassMethods モジュール をエクステンドさせる
+        base.extend const_get(:ClassMethods) if const_defined?(:ClassMethods)
+        # ...
+      end
+
+    # ...
+  # ...
+```
+
+
+```ruby
+module SecondLevelModule
+  extend ActiveSupport::Concern
+
+  def second_level_instance_method; " インスタンスメソッド "; end
+
+  module ClassMethods
+    def second_level_class_method; " クラスメソッド "; end
+  end
+end
+
+module FirstLevelModule
+  extend ActiveSupport::Concern
+  include SecondLevelModule
+
+  def first_level_instance_method; " インスタンスメソッド "; end
+
+  module ClassMethods
+    def first_level_class_method; " クラスメソッド "; end
+  end
+end
+
+class MyClass
+  include FirstLevelModule
+end
+```
+
+1. MyClassがFirstLevelModuleをincludeしようとする
+
+2. FirstLevelModuleがSecondLevelModuleをincludeしようとする
+
+3. FirstLevelModuleの@_dependenciesにSecondLevelModuleが入る
+
+4. FirstLevelModuleの@_dependenciesをもとにMyClassに再帰的にincludeが実行される
+
+5. FirstLevelModuleがMyClassにincludeされる(superによって)
+
+6. MyClassがFirstLevelModuleの ClassMethods をエクステンドする
+
+
+疑問：second_level_class_methodってどうやってMyClassに生えてるの？
+このへんが理解できていないせいな気がする
+```
+ClassMethodsの参照は Kernel#const_get を使って取得する必要がある
+コードが物理的に配置されている Concern モジュールではなく、self のスコープで定数を読み込まなければいけないから
+```
