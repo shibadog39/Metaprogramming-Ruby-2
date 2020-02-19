@@ -1,0 +1,40 @@
+# 付録C 魔術書
+
+## 説明できる
+- C.1.4 クラスインスタンス変数(Class Instance Variable)
+- C.1.14 ゴーストメソッド(Ghost Method)
+- C.1.15 フックメソッド(Hook Method)
+- C.1.16 カーネルメソッド(Kernel Method)
+- C.1.17 遅延インスタンス変数(Lazy Instance Variable)
+- C.1.18 ミミックメソッド(Mimic Method)
+- C.1.19 モンキーパッチ(Monkeypatch)
+- C.1.20 ネームスペース(Namespace)
+- C.1.21 nil ガード(Nil Guard)
+- C.1.23 オープンクラス(Open Class)
+- C.1.24 Prepend ラッパー(Prepended Wrapper)
+- C.1.28 スコープゲート(Scope Gate)
+- C.1.32 コード文字列(String of Code)
+
+## なんとなくわかる
+- C.1.1 アラウンドエイリアス(Around Alias)
+- C.1.3 クラス拡張(Class Extension)
+- C.1.9 あとで評価(Deferred Evaluation)
+- C.1.10 動的ディスパッチ(Dynamic Dispatch)
+- C.1.11 動的メソッド(Dynamic Method)
+- C.1.12 動的プロキシ(Dynamic Proxy)
+- C.1.22 オブジェクト拡張(Object Extension)
+- C.1.25 Refinements(Refinements)
+- C.1.26 Refinements ラッパー(Refinements Wrapper)
+- C.1.29 自己 yield(Self Yield)
+- C.1.31 特異メソッド(Singleton Method)
+- C.1.33 Symbol の Proc 変換(Symbol To Proc)
+
+## 要復習
+- C.1.2 ブランクスレート(Blank Slate)
+- C.1.5 クラスマクロ(Class Macro)
+- C.1.6 クリーンルーム(Clean Room)
+- C.1.7 コードプロセッサ(Code Processor)
+- C.1.8 コンテキスト探査機(Context Probe)
+- C.1.13 フラットスコープ(Flat Scope)
+- C.1.27 サンドボックス(Sandbox)
+- C.1.30 共有スコープ(Shared Scope)
