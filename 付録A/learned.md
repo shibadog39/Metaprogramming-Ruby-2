@@ -36,6 +36,7 @@ end
 ※ このときattr_accessorがprivateだとしても、正常に呼び出せる
 通常、レシーバself を明示していないprivate メソッドの呼び出しはできない。
 だがこの難問は、Ruby の特例によって解決できる。my_attribute= などのアトリビュートのセッターは、privateであっても selfをつけて呼び出せるのだ。
+これはローカル変数だと認識されてしまうことのほうが都合が悪いことが多いからである。
 
 ## A.2 nilガード
 ```ruby
@@ -102,3 +103,27 @@ names.map(&:capitalize.to_proc) # => ["Bob", "Bill", "Heather"]
 # そして、 それが to_proc を呼び出してオブジェクトを Proc にしているのだから、以下のように書ける
 names.map(&:capitalize) # => ["Bob", "Bill", "Heather"]
 ```
+
+# 勉強会にて
+## SymbolのProc変換他にもこういう書き方もできる
+
+```
+method = 2.method(:*)
+[1,2,3].map(&method)
+=> [2, 4, 6]  
+```
+2 * i ができる
+
+----
+
+```
+[1,2,3].each(&method(:puts))
+1
+2
+3
+=> [1, 2, 3]
+```
+tapぽい使い方
+
+## tap / then / yield_self
+https://techracho.bpsinc.jp/kazz/2019_12_23/85305
